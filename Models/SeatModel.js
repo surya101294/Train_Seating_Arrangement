@@ -9,3 +9,4 @@ const seatSchema = mongoose.Schema({
 const SeatModel = mongoose.model("seat", seatSchema)
 
 module.exports = { SeatModel }
+ 

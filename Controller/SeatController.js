@@ -5,32 +5,37 @@ const postSeats = async (req, res) => {
     let n = +req.body.number
     console.log(n);
     try {
-        let check = false
+        let flag = false
         const seats = await SeatModel.find()
-        let indexes = [];
-        for (let i = 0; seats && i <= seats.length - n; i++) {
-            let subArr = seats.slice(i, i + n);
-            // console.log("subarray",subArr);
-            let flag = true
-            for (let j = 0; j < subArr.length; j++) {
-                if (subArr[j].availability == true) {
-                    flag = false;
-                    break
-                }
-            }
-            if (flag) {
-                for (let j = 0; j < subArr.length; j++) {
-                    indexes.push(subArr[j]);
-                }
-                break
+
+        let batch = Infinity, pos
+        for (let i = 0; i < seats.length / n; i++) {
+            let ans = checkAvailablity(i, n);
+            if (ans) {
+                batch = i;
+                break;
             }
         }
-        for (let i = 0; i < indexes.length; i++) {
-            const any = await SeatModel.findOneAndUpdate({ seatNo: indexes[i].seatNo }, { availability: true })
-            console.log(indexes[i])
-            check = true
+
+        batch == Infinity ? flag = true : pos = batch * n
+
+        console.log(batch, batch * n + 1);
+        function checkAvailablity(t, num) {
+            for (let i = t; i < t + 1; i++) {
+                for (let p = (i) * num; p < (i + 1) * num; p++) {
+                    if (seats[p].availability === true) {
+                        return false
+                    }
+                }
+                return true
+            }
         }
-        check ? res.send({ "msg": "success", indexes }) : res.send("Not available")
+        if (pos) {
+            for (let i = pos; i < pos + n; i++) {
+                const any = await SeatModel.findOneAndUpdate({ seatNo: seats[i].seatNo }, { availability: true })
+            }
+        }
+        !flag ? res.send({ "msg": "success", position: pos + 1 }) : res.send("Not available")
     } catch (err) {
         res.send(err.message)
     }
@@ -451,7 +456,7 @@ let arr = [
     }
 ]
 
-const addData=async (req, res) => {
+const addData = async (req, res) => {
     try {
         const seats = await SeatModel.insertMany(arr)
         res.send(seats)
@@ -461,4 +466,7 @@ const addData=async (req, res) => {
     }
 }
 
-module.exports = {addData, postSeats, getSeats }
+module.exports = { addData, postSeats, getSeats }
+
+
+

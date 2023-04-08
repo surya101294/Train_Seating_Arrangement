@@ -18,7 +18,7 @@ const postSeats = async (req, res) => {
         }
 
         batch == Infinity ? flag = true : pos = batch * n
-
+// console.log(pos);
         console.log(batch, batch * n + 1);
         function checkAvailablity(t, num) {
             for (let i = t; i < t + 1; i++) {
@@ -35,7 +35,10 @@ const postSeats = async (req, res) => {
                 const any = await SeatModel.findOneAndUpdate({ seatNo: seats[i].seatNo }, { availability: true })
             }
         }
-        !flag ? res.send({ "msg": "success", position: pos + 1 }) : res.send("Not available")
+        if (pos==0) {
+                const any = await SeatModel.findOneAndUpdate({ seatNo: seats[pos].seatNo }, { availability: true })
+        }
+        !flag ? res.status(200).send({ "msg": "success", position: pos + 1 }) : res.status(400).send("Seat Not available")
     } catch (err) {
         res.send(err.message)
     }
@@ -45,10 +48,10 @@ const postSeats = async (req, res) => {
 const getSeats = async (req, res) => {
     try {
         const seats = await SeatModel.find()
-        res.send(seats)
+        res.status(200).send(seats)
     } catch (err) {
         console.log(err)
-        res.send(err.message)
+        res.status(400).send(err.message)
     }
 
 }
